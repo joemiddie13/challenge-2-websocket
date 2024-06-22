@@ -13,11 +13,15 @@
       #messages li { padding: 8px; margin-bottom: 8px; background: rgb(240, 240, 240); }
       #nickname { margin-bottom: 10px; padding: 10px; width: 80%; }
       #set-nickname { padding: 10px; }
+      #online-users { margin-bottom: 10px; }
+      #typing { margin-bottom: 10px; font-style: italic; }
     </style>
   </head>
   <body>
     <input id="nickname" placeholder="Enter your nickname" autocomplete="off"/>
     <button id="set-nickname">Set Nickname</button>
+    <div id="online-users">Online users: </div>
+    <div id="typing"></div>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
@@ -44,8 +48,24 @@
           return false;
         });
 
+        $('#input').on('input', function() {
+          socket.emit('typing', $('#input').val().length > 0);
+        });
+
         socket.on('chat message', function(msg){
           $('#messages').append($('<li>').text(msg));
+        });
+
+        socket.on('user list', function(users) {
+          $('#online-users').text('Online users: ' + users.join(', '));
+        });
+
+        socket.on('typing', function(data) {
+          if (data.isTyping) {
+            $('#typing').text(`${data.user} is typing...`);
+          } else {
+            $('#typing').text('');
+          }
         });
       });
     </script>
